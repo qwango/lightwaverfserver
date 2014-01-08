@@ -113,10 +113,13 @@ $.get("/sonos/previous");
             <button type="button" class="btn btn-primary btn-xs" id="alloff-{{room}}">All Off</button> </h3>
             <h4>Moods</h4>
 {% for mood in config['rooms'][room]['moods'] %}
+                {%if mood != ''%}
                 <button type="button" class="btn btn-success btm-sm" id="mood-{{room}}-{{mood|replace(' ','')}}">{{mood|title}}</button> 
+                {%endif%}
 {% endfor %}
             <h4>Devices</h4>
 {% for device in config['rooms'][room]['devices']: %}
+            {%if device != ''%}
             <p>{{device|title}} - 
             <span id="amount-{{room}}-{{device}}">0</span> 
             <div id="slider-{{room}}-{{device}}" style="margin-bottom: 10px;"></div>
@@ -125,6 +128,7 @@ $.get("/sonos/previous");
             <button type="button" class="btn btn-primary btn-sm" id="off-{{room}}-{{device}}">Off</button>          
             <button type="button" class="btn btn-primary btn-sm" id="resume-{{room}}-{{device}}">Resume</button> 
             </p>
+            {%endif%}
 {%endfor%}
         </div>
 {% if loop.index is divisibleby 3 %}

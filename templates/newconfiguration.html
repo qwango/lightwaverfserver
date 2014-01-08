@@ -45,7 +45,7 @@ $(function(){
 
         <div class="row">
 {% for num in range(1,7) %}
-{%if num>1%}     
+{%if num>rooms|length%}     
          <div class="col-md-4" style="display: none;" id="col-{{num}}">
 {%else%}
         <div class="col-md-4" id="col-{{num}}">
@@ -53,10 +53,10 @@ $(function(){
             <form role="form" method="post" action="/configure">
               <div class="form-group">
                 <label for="room-{{num}}">Room name</label>
-                <input type="text" class="form-control" id="room-{{num}}" name="room-{{num}}" placeholder="Room Name" value="{{request.form['room-%d' % num]}}">
+                <input type="text" class="form-control" id="room-{{num}}" name="room-{{num}}" placeholder="Room Name" value="">
               </div>
               <div class="form-group">
-                <label for="roomid-{{room}}">Room ID</label>
+                <label for="roomid-{{rooms}}">Room ID</label>
                 <input type="text" class="form-control" id="roomid-{{num}}" name="roomid-{{num}}" value="{{num}}">
               </div>
               <div class="form-group" id="room-{{num}}-devices">
@@ -70,6 +70,7 @@ $(function(){
                 <label>Moods (separate with commas)</label>
                 <div id="tags">
                 <input type="text" class="form-control" id="moods-{{num}}" placeholder="Add a mood...">
+
                 <input type="hidden" class="form-control" id="moods-{{num}}-hidden" name="moods-{{num}}-hidden"  value="">
                 </div>
               </div>

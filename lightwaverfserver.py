@@ -8,10 +8,10 @@ app.config.from_pyfile('settings.py')
 logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.DEBUG, filename='lightwave.log')
 
 try:
-    config = json.load(open('lightwaverf-config.json'))
+    app.config['CONFIG'] = json.load(open('lightwaverf-config.json'))
 except:
     logging.info("Couldn't load config file")
-    config = {}
+    app.config['CONFIG'] = {}
 
 ####################################################
 #
@@ -50,28 +50,32 @@ def hello_world():
 @app.route('/configure', methods=['GET', 'POST'])
 def newConfiguration():
     if request.method == 'GET':
-        return render_template('newconfiguration.html')
+        return render_template('newconfiguration.html', config=app.config['CONFIG'],rooms=app.config['CONFIG']['rooms'].keys())
     if request.method == 'POST':
         tempconfig = {"rooms":{}}
         for r in range(1,7):
             try:
-                room = request.form['room-%d' % r]
+                room = request.form['room-%d' % r].lower()
                 if  room:
                     tempconfig['rooms'][room] = {}
+                    tempconfig['rooms'][room]['id'] = request.form['roomid-%d' % r]
                     tempconfig['rooms'][room]['devices'] = (request.form[('room-%d-devices-hidden' % r)])[1:].split(',')
                     tempconfig['rooms'][room]['moods'] = (request.form[('moods-%d-hidden' % r)])[1:].split(',')
             except:
                 pass
-        return render_template('newconfiguration.html', tempconfig=tempconfig, data=request.form)
+        with open('lightwaverf-config.json', 'w') as outfile:
+            json.dump(tempconfig, outfile, indent=3)
+        app.config['CONFIG'] = tempconfig
+        return render_template('newconfiguration.html', tempconfig=tempconfig, config=app.config['CONFIG'], rooms=app.config['CONFIG']['rooms'].keys())
     
     
 @app.route('/controller')
 def showConfiguration():
-    return render_template('controller.html', config=config)
+    return render_template('controller.html', config=app.config['CONFIG'])
 
 @app.route('/alloff')
 def alloff():
-    for room in config['rooms']:
+    for room in app.config['CONFIG']['rooms']:
         doCommand(room, command='alloff')
     return "Turned everything off"   
     
@@ -81,16 +85,16 @@ def alloff():
 def doCommand(room, device=None, command=None, dim=-1):
     logging.info("Got command '%s' for %s in %s" % (command, device, room))
     try:
-        roomid = config['rooms'][room]['id']
+        roomid = app.config['CONFIG']['rooms'][room]['id']
         if device == 'moods':
-            moodid = config['rooms'][room]['moods'].index(command)+1
+            moodid = app.config['CONFIG']['rooms'][room]['moods'].index(command)+1
             sendCommand('%s,!R%dFmP%d%s' % (app.config['START'], roomid, moodid, app.config['END']))
             return "Setting %s to %s mood" % (room, command)
         if command == 'on':
             dim=100
         if command == 'allon':
-            print config['rooms'][room]['devices']
-            for d in config['rooms'][room]['devices']:
+            print app.config['CONFIG']['rooms'][room]['devices']
+            for d in app.config['CONFIG']['rooms'][room]['devices']:
                 time.sleep(1.5)
                 doCommand(room, d, 'on')
             return "Turning everything on in %s" % room
@@ -106,7 +110,7 @@ def doCommand(room, device=None, command=None, dim=-1):
     except KeyError:
         return "Sorry, I couldn't find %s in your list of rooms." % (room)
     except ValueError:
-        return "Sorry, I couldn't find %s in your list of devices for room %s. The only ones I know about are %s" % (device, room, str(config['rooms'][room]['devices']))
+        return "Sorry, I couldn't find %s in your list of devices for room %s. The only ones I know about are %s" % (device, room, str(app.config['CONFIG']['rooms'][room]['devices']))
     message = '%s,!R%dD%dF%d%s' % (app.config['START'], roomid, deviceid, 0,app.config['END'])
     sendCommand(message)
     return "Sending command %s to %s in %s" % (command, device, room)
