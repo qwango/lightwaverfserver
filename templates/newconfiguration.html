@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LightwaveRF Controller</title>
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+  <script>
+$(function(){
+
+  $('#tags input').on('focusout',function(){    
+    var txt= this.value.replace(/[^a-zA-Z0-9\+\-\.\#]/g,'');
+    if(txt) {
+      $(this).after('<span class="tag">'+ txt.toLowerCase() +'</span>');
+      a = $(this).attr('id').charAt(0);
+      $('#'+$(this).attr('id')+ '-hidden').val($('#'+$(this).attr('id')+ '-hidden').val() + ','+txt.toLowerCase());
+    }
+    this.value="";
+  }).on('keyup',function( e ){
+    // if: comma,enter (delimit more keyCodes with | pipe)
+    if(/(188|13)/.test(e.which)) $(this).focusout();     
+  });
+
+  $('#tags').on('click','.tag',function(){
+     $(this).remove(); 
+  });
+
+});
+  </script>
+<style>
+</style>  
+
+</head>
+<body>
+    <div class="container">
+          <div class="page-header">
+            <h1>LightwaveRF configuration</h1>
+            <p class="lead">Set up your LightwaveRF configuration from this page</p>
+            <a href="/controller">Controller</a>
+          </div>
+
+        <div class="row">
+{% for num in range(1,7) %}
+{%if num>1%}     
+         <div class="col-md-4" style="display: none;" id="col-{{num}}">
+{%else%}
+        <div class="col-md-4" id="col-{{num}}">
+{%endif%}
+            <form role="form" method="post" action="/configure">
+              <div class="form-group">
+                <label for="room-{{num}}">Room name</label>
+                <input type="text" class="form-control" id="room-{{num}}" name="room-{{num}}" placeholder="Room Name" value="{{request.form['room-%d' % num]}}">
+              </div>
+              <div class="form-group">
+                <label for="roomid-{{room}}">Room ID</label>
+                <input type="text" class="form-control" id="roomid-{{num}}" name="roomid-{{num}}" value="{{num}}">
+              </div>
+              <div class="form-group" id="room-{{num}}-devices">
+                <label for="room-{{num}}-devices">Devices (separate with commas)</label>
+                <div id="tags">
+                <input type="text" class="form-control" id="room-{{num}}-devices" placeholder="Add a device...">
+                <input type="hidden" class="form-control" id="room-{{num}}-devices-hidden" name="room-{{num}}-devices-hidden" value="">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Moods (separate with commas)</label>
+                <div id="tags">
+                <input type="text" class="form-control" id="moods-{{num}}" placeholder="Add a mood...">
+                <input type="hidden" class="form-control" id="moods-{{num}}-hidden" name="moods-{{num}}-hidden"  value="">
+                </div>
+              </div>
+              <div class="form-group alignright"><label>Add another room</label>
+              <button type="button" class="btn btn-primary" id="show-{{num}}" onClick="$('#col-{{num+1}}').show()"><span class="glyphicon glyphicon-plus"></span></button>
+                </div>
+
+        </div>
+{% if loop.index is divisibleby 3 %}
+        </div> <!-- row -->
+        <hr>
+      <div class="row">
+{% endif %}
+{%endfor%}
+
+              <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+    </div>
+</body>
+</html>

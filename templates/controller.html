@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LightwaveRF Controller</title>
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+  <script>
+  $(function() {
+
+{% for room in config['rooms']:%}
+  $("#allon-{{room}}").click(function() {
+    $("#feedback").text("allon-{{room}} was clicked");
+    $.get("/{{room}}/allon", function(data) {
+            $("#feedback").text(data);
+     });
+   });
+  $("#alloff-{{room}}").click(function() {
+    $("#feedback").text("alloff-{{room}} was clicked");
+    $.get("/{{room}}/alloff", function(data) {
+            $("#feedback").text(data);
+     });
+   });
+{% for device in config['rooms'][room]['devices']: %}
+  $( "#slider-{{room}}-{{device}}" ).slider( {
+        range: "min",
+        min: 0,
+        max: 100,
+        step: 10,
+	animate: true,
+        slide: function(event, ui) {
+            $("#amount-{{room}}-{{device}}").text( ui.value);
+            $("#feedback").text("Slider for {{room}}-{{device}} was set to " + ui.value);
+            $.get("/{{room}}/{{device}}/dim/" + ui.value, function(data) {
+            $("#feedback").text(data);
+            });
+        }
+  });
+  $("#on-{{room}}-{{device}}").click(function() {
+    $("#feedback").text("on-{{room}}-{{device}} was clicked");
+    $.get("/{{room}}/{{device}}/on", function(data) {
+        $("#feedback").text(data);
+    });
+   });
+  $("#off-{{room}}-{{device}}").click(function() {
+    $("#feedback").text("off-{{room}}-{{device}} was clicked");
+    $.get("/{{room}}/{{device}}/off", function(data) {
+     $("#feedback").text(data);
+    });
+   });
+   $("#resume-{{room}}-{{device}}").click(function() {
+    $("#feedback").text("resume-{{room}}-{{device}} was clicked");
+    $.get("/{{room}}/{{device}}/resume", function(data) {
+     $("#feedback").text(data);
+    });
+   });
+   
+{% endfor %}
+{% for mood in config['rooms'][room]['moods']: %}
+  $("#mood-{{room}}-{{mood|replace(' ', '')}}").click(function() {
+    $("#feedback").text("mood-{{room}}-{{mood}} was clicked");
+    $.get("/{{room}}/moods/{{mood}}", function(data) {
+     $("#feedback").text(data);
+    });
+   });
+{% endfor %}
+{% endfor %}
+//Delete this section to remove Sonos from controller
+$("#sonos-slider").slider( {
+range: "min",
+min: 0,
+max: 100,
+step: 5,
+animate: true,
+slide: function(event, ui) {
+$.get("/sonos/volume/" + ui.value);
+}
+});
+$("#sonos-off").click(function() {
+$.get("/sonos/pause");
+});
+$("#sonos-on").click(function() {
+$.get("/sonos/play");
+});
+$("#sonos-next").click(function() {
+$.get("/sonos/next");
+});
+$("#sonos-previous").click(function() {
+$.get("/sonos/previous");
+});
+// End of section to delete
+});
+  </script>
+</head>
+<body>
+    <div class="container">
+      <div class="page-header">
+        <h1>Controller</h1>
+        <h4>Control all your devices from this page</h4>
+        <a href="/configure">Configure</a><br>
+
+
+        <span id="feedback" style="font-style: italic;">&nbsp;</span>
+
+      <div class="row">
+{% for room in config['rooms']:%}
+        <div class="col-sm-4">
+            <h3 style="border-bottom: 1px solid grey; padding-bottom: 4px;">{{room|title}}
+            <button type="button" class="btn btn-primary btn-xs" id="allon-{{room}}">All On</button> 
+            <button type="button" class="btn btn-primary btn-xs" id="alloff-{{room}}">All Off</button> </h3>
+            <h4>Moods</h4>
+{% for mood in config['rooms'][room]['moods'] %}
+                <button type="button" class="btn btn-success btm-sm" id="mood-{{room}}-{{mood|replace(' ','')}}">{{mood|title}}</button> 
+{% endfor %}
+            <h4>Devices</h4>
+{% for device in config['rooms'][room]['devices']: %}
+            <p>{{device|title}} - 
+            <span id="amount-{{room}}-{{device}}">0</span> 
+            <div id="slider-{{room}}-{{device}}" style="margin-bottom: 10px;"></div>
+            <p>
+            <button type="button" class="btn btn-primary btn-sm" id="on-{{room}}-{{device}}">On</button> 
+            <button type="button" class="btn btn-primary btn-sm" id="off-{{room}}-{{device}}">Off</button>          
+            <button type="button" class="btn btn-primary btn-sm" id="resume-{{room}}-{{device}}">Resume</button> 
+            </p>
+{%endfor%}
+        </div>
+{% if loop.index is divisibleby 3 %}
+        </div> <!-- row -->
+        <hr>
+      <div class="row">
+{% endif %}
+{%endfor%}
+        </div>
+      <hr>
+        <p>Sonos </p>
+
+ <div id="sonos-slider" style="width: 300px; margin-bottom: 10px;"></div>
+
+<button type="button" class="btn btn-primary btn-xs" id="sonos-on"><span class="glyphicon glyphicon-play"></span></button>
+ <button type="button" class="btn btn-primary btn-xs" id="sonos-off"><span class="glyphicon glyphicon-pause"></span></button>
+ <button type="button" class="btn btn-primary btn-xs" id="sonos-previous"><span class="glyphicon glyphicon-step-backward"></span></button>
+ <button type="button" class="btn btn-primary btn-xs" id="sonos-next"><span class="glyphicon glyphicon-step-forward"></span></button>
+ </div>      
+    </div>
+
+
+</body>
+</html>

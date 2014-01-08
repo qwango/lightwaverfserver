@@ -1,0 +1,42 @@
+{
+   "rooms":{
+      "lounge":{
+         "id":2,
+         "devices":[
+            "main",
+            "lamps"
+         ],
+         "moods":[
+            "relax"
+         ]
+      },
+      "extension":{
+         "id":1,
+         "devices":[
+            "diner",
+            "kitchen",
+            "sofa",
+            "pendants"
+         ],
+         "moods":[
+            "relax"
+         ]
+      },
+      "bathroom":{
+         "id":3,
+         "devices":[
+            "lights"
+         ]
+      },
+      "testing":{
+         "id":4,
+         "devices":[
+            "lights"
+         ],
+         "moods": [
+            "first mood",
+            "second mood"
+         ]
+      }
+   }
+}
